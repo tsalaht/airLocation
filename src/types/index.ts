@@ -74,6 +74,7 @@ export interface FilterOptions {
   availability: string[];
   condition: string[];
   features: string[];
+  wilayas?: string[];
 }
 
 export interface SearchParams {

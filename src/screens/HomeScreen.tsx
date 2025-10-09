@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  Dimensions} from 'react-native';
+  Dimensions,
+  Platform} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
@@ -19,6 +20,7 @@ import { FontText } from '../components/FontText';
 import { useRTL } from '../utils/rtlUtils';
 import { useNavigation } from '@react-navigation/native';
 import { Car } from '../types';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
 
@@ -261,6 +263,41 @@ const HomeScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
+  const [pickupDateObj, setPickupDateObj] = useState<Date | undefined>(undefined);
+  const [returnDateObj, setReturnDateObj] = useState<Date | undefined>(undefined);
+  const [showPickupPicker, setShowPickupPicker] = useState(false);
+  const [showReturnPicker, setShowReturnPicker] = useState(false);
+
+  const formatDate = (date: Date) => {
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const filteredCars = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const matchesQuery = (car: Car) => {
+      if (!normalizedQuery) return true;
+      const haystack = [
+        car.brand,
+        car.model,
+        String(car.year),
+        car.category,
+        car.location?.city,
+        car.location?.address,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(normalizedQuery);
+    };
+
+    // Date filtering placeholder: ensure valid range if both selected.
+    const validDateRange = !pickupDateObj || !returnDateObj || pickupDateObj <= returnDateObj;
+
+    return validDateRange ? featuredCars.filter(matchesQuery) : [];
+  }, [searchQuery, pickupDateObj, returnDateObj]);
 
   const renderFeaturedCar = ({ item }: { item: Car }) => (
     <TouchableOpacity 
@@ -351,7 +388,7 @@ const HomeScreen: React.FC = () => {
 
       {/* Search Section */}
       <View style={[styles.searchSection, { backgroundColor: theme.colors.background }]}>
-        <View style={[
+        {/* <View style={[
           styles.searchContainer, 
           { 
             backgroundColor: theme.colors.surface,
@@ -372,7 +409,7 @@ const HomeScreen: React.FC = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        </View>
+        </View> */}
 
         <View style={[styles.dateContainer, { flexDirection: flexDirection }]}>
           <TouchableOpacity style={[
@@ -381,7 +418,8 @@ const HomeScreen: React.FC = () => {
               backgroundColor: theme.colors.surface,
               flexDirection: flexDirection
             }
-          ]}>
+          ]}
+          onPress={() => setShowPickupPicker(true)}>
             <Ionicons name="calendar-outline" size={16} color={theme.colors.primary} />
             <FontText 
               fontStyle="body" 
@@ -396,7 +434,8 @@ const HomeScreen: React.FC = () => {
               backgroundColor: theme.colors.surface,
               flexDirection: flexDirection
             }
-          ]}>
+          ]}
+          onPress={() => setShowReturnPicker(true)}>
             <Ionicons name="calendar-outline" size={16} color={theme.colors.primary} />
             <FontText 
               fontStyle="body" 
@@ -445,7 +484,7 @@ const HomeScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
         <FlatList
-          data={featuredCars}
+          data={filteredCars}
           renderItem={renderFeaturedCar}
           keyExtractor={(item) => item.id}
           horizontal
@@ -672,6 +711,41 @@ const HomeScreen: React.FC = () => {
           </View>
         </ScrollView>
       </View>
+      {/* Date Pickers */}
+      {showPickupPicker && (
+        <DateTimePicker
+          value={pickupDateObj ?? new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(_, selectedDate) => {
+            if (Platform.OS !== 'ios') setShowPickupPicker(false);
+            if (selectedDate) {
+              setPickupDateObj(selectedDate);
+              setPickupDate(formatDate(selectedDate));
+              // Reset return if it is before pickup
+              if (returnDateObj && selectedDate > returnDateObj) {
+                setReturnDateObj(undefined);
+                setReturnDate('');
+              }
+            }
+          }}
+        />
+      )}
+      {showReturnPicker && (
+        <DateTimePicker
+          value={returnDateObj ?? (pickupDateObj ? pickupDateObj : new Date())}
+          mode="date"
+          minimumDate={pickupDateObj}
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(_, selectedDate) => {
+            if (Platform.OS !== 'ios') setShowReturnPicker(false);
+            if (selectedDate) {
+              setReturnDateObj(selectedDate);
+              setReturnDate(formatDate(selectedDate));
+            }
+          }}
+        />
+      )}
     </ScrollView>
   );
 };

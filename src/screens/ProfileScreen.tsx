@@ -13,6 +13,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Colors, Spacing, FontSizes, FontWeights, BorderRadius } from '../constants/colors';
+import { useNavigation } from '@react-navigation/native';
 import { useFonts } from '../hooks/useFonts';
 import { FontText } from '../components/FontText';
 import { useRTL } from '../utils/rtlUtils';
@@ -24,6 +25,7 @@ const ProfileScreen: React.FC = () => {
   const { currentLanguage, changeLanguage, isRTL } = useLanguage();
   const { user, logout } = useAuth();
   const { fontStyles } = useFonts();
+  const navigation = useNavigation();
   const { flexDirection } = useRTL();
 
   const languages: { code: Language; name: string; flag: string }[] = [
@@ -36,31 +38,31 @@ const ProfileScreen: React.FC = () => {
     {
       icon: 'person-outline',
       title: t('profile.personalInfo'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('PersonalInfo')},
     {
       icon: 'notifications-outline',
       title: t('profile.notifications'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('Notifications')},
     {
       icon: 'calendar-outline',
       title: t('profile.myBookings'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('MyBookings')},
     {
       icon: 'information-circle-outline',
       title: t('profile.about'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('About')},
     {
       icon: 'call-outline',
       title: t('profile.contact'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('Contact')},
     {
       icon: 'shield-outline',
       title: t('profile.privacy'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('Privacy')},
     {
       icon: 'document-text-outline',
       title: t('profile.terms'),
-      onPress: () => {}},
+      onPress: () => (navigation as any).navigate('Terms')},
   ];
 
   const renderMenuItem = (item: typeof menuItems[0], index: number) => (

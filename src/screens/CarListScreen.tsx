@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -202,7 +202,8 @@ const CarListScreen: React.FC = () => {
     fuelType: [],
     availability: [],
     condition: [],
-    features: []});
+    features: [],
+    wilayas: []});
 
   const sortOptions = [
     { key: 'price', label: t('common.price') },
@@ -231,6 +232,31 @@ const CarListScreen: React.FC = () => {
     { key: 'hybrid', label: t('car.hybrid') },
   ];
 
+  // Algeria wilayas (subset based on mock data; extend as needed)
+  const filterWilayas = [
+    { key: 'Algiers', label: 'Algiers' },
+    { key: 'Oran', label: 'Oran' },
+    { key: 'Constantine', label: 'Constantine' },
+    { key: 'Annaba', label: 'Annaba' },
+    { key: 'Blida', label: 'Blida' },
+    { key: 'Tizi Ouzou', label: 'Tizi Ouzou' },
+  ];
+
+  const filteredCars = useMemo(() => {
+    return cars.filter((car) => {
+      if (filters.wilayas && filters.wilayas.length > 0) {
+        if (!filters.wilayas.includes(car.location.city)) return false;
+      }
+      // Optional: basic search by model/brand
+      const q = searchQuery.trim().toLowerCase();
+      if (q) {
+        const hay = `${car.brand} ${car.model} ${car.year} ${car.location.city}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [cars, filters.wilayas, searchQuery]);
+
   const renderCarGrid = ({ item }: { item: Car }) => (
     <TouchableOpacity 
       style={[styles.carCard, { backgroundColor: theme.colors.card }]}
@@ -242,38 +268,21 @@ const CarListScreen: React.FC = () => {
           fontStyle="h3" 
           style={[styles.carTitle, { color: theme.colors.textPrimary }]}
         >
-          {item.brand} {item.model}
+          {item.model}
         </FontText>
         <FontText 
           fontStyle="caption" 
           style={[styles.carYear, { color: theme.colors.textSecondary }]}
         >
-          {item.year} • {item.mileage.toLocaleString()} km
+          {item.year}
         </FontText>
-        <View style={styles.carDetails}>
-          <View style={styles.carDetail}>
-            <Ionicons name="settings-outline" size={14} color={theme.colors.textSecondary} />
-            <FontText 
-              fontStyle="caption" 
-              style={[styles.carDetailText, { color: theme.colors.textSecondary }]}
-            >
-              {t(`car.${item.gearbox}`)}
-            </FontText>
-          </View>
-          <View style={styles.carDetail}>
-            <Ionicons name="flash-outline" size={14} color={theme.colors.textSecondary} />
-            <Text style={[styles.carDetailText, { color: theme.colors.textSecondary }]}>
-              {t(`car.${item.fuelType}`)}
-            </Text>
-          </View>
+        <View style={styles.locationRow}>
+          <Ionicons name="location-outline" size={14} color={theme.colors.textSecondary} />
+          <Text style={[styles.locationText, { color: theme.colors.textSecondary }]}>
+            {item.location.city}
+          </Text>
         </View>
         <View style={styles.carFooter}>
-          <View style={styles.carRating}>
-            <Ionicons name="star" size={14} color={Colors.warning} />
-            <Text style={[styles.ratingText, { color: theme.colors.textSecondary }]}>
-              {item.rating}
-            </Text>
-          </View>
           <Text style={[styles.carPrice, { color: theme.colors.primary }]}>
             {item.pricePerDay} DA
           </Text>
@@ -283,27 +292,23 @@ const CarListScreen: React.FC = () => {
   );
 
   const renderCarList = ({ item }: { item: Car }) => (
-    <TouchableOpacity style={[styles.carListItem, { backgroundColor: theme.colors.card }]}>
+    <TouchableOpacity 
+      style={[styles.carListItem, { backgroundColor: theme.colors.card }]}
+      onPress={() => (navigation as any).navigate('CarDetails', { car: item })}
+    >
       <Image source={{ uri: item.images[0] }} style={styles.carListImage} />
       <View style={styles.carListInfo}>
         <Text style={[styles.carListTitle, { color: theme.colors.textPrimary }]}>
-          {item.brand} {item.model}
+          {item.model}
         </Text>
         <Text style={[styles.carListYear, { color: theme.colors.textSecondary }]}>
-          {item.year} • {item.mileage.toLocaleString()} km
+          {item.year}
         </Text>
         <View style={styles.carListDetails}>
-          <Text style={[styles.carListDetail, { color: theme.colors.textSecondary }]}>
-            {t(`car.${item.gearbox}`)} • {t(`car.${item.fuelType}`)}
-          </Text>
+          <Ionicons name="location-outline" size={14} color={theme.colors.textSecondary} />
+          <Text style={[styles.carListDetail, { color: theme.colors.textSecondary }]}> {item.location.city}</Text>
         </View>
         <View style={styles.carListFooter}>
-          <View style={styles.carListRating}>
-            <Ionicons name="star" size={14} color={Colors.warning} />
-            <Text style={[styles.carListRatingText, { color: theme.colors.textSecondary }]}>
-              {item.rating} ({item.reviewCount})
-            </Text>
-          </View>
           <Text style={[styles.carListPrice, { color: theme.colors.primary }]}>
             {item.pricePerDay} DA/day
           </Text>
@@ -369,6 +374,44 @@ const CarListScreen: React.FC = () => {
                     ]}
                   >
                     {category.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Wilayas */}
+          <View style={styles.filterSection}>
+            <Text style={[styles.filterSectionTitle, { color: theme.colors.textPrimary }]}>Wilaya</Text>
+            <View style={styles.filterOptions}>
+              {filterWilayas.map((wilaya) => (
+                <TouchableOpacity
+                  key={wilaya.key}
+                  style={[
+                    styles.filterOption,
+                    {
+                      backgroundColor: (filters.wilayas || []).includes(wilaya.key)
+                        ? theme.colors.primary
+                        : theme.colors.surface},
+                  ]}
+                  onPress={() => {
+                    const current = filters.wilayas || [];
+                    const newWilayas = current.includes(wilaya.key)
+                      ? current.filter(w => w !== wilaya.key)
+                      : [...current, wilaya.key];
+                    setFilters({ ...filters, wilayas: newWilayas });
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      {
+                        color: (filters.wilayas || []).includes(wilaya.key)
+                          ? theme.colors.white
+                          : theme.colors.textPrimary},
+                    ]}
+                  >
+                    {wilaya.label}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -530,7 +573,7 @@ const CarListScreen: React.FC = () => {
 
       {/* Car List */}
       <FlatList
-        data={cars}
+        data={filteredCars}
         renderItem={viewMode === 'grid' ? renderCarGrid : renderCarList}
         keyExtractor={(item) => item.id}
         numColumns={viewMode === 'grid' ? 2 : 1}
@@ -613,7 +656,7 @@ const styles = StyleSheet.create({
     elevation: 3},
   carImage: {
     width: '100%',
-    height: 120,
+    height: 160,
     borderTopLeftRadius: BorderRadius.lg,
     borderTopRightRadius: BorderRadius.lg},
   carInfo: {
@@ -624,6 +667,13 @@ const styles = StyleSheet.create({
   carYear: {
     fontSize: FontSizes.sm,
     marginBottom: Spacing.sm},
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm},
+  locationText: {
+    fontSize: FontSizes.xs,
+    marginLeft: Spacing.xs},
   carDetails: {
     flexDirection: 'row',
     marginBottom: Spacing.sm},
@@ -658,8 +708,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3},
   carListImage: {
-    width: 120,
-    height: 80,
+    width: 160,
+    height: "100%",
     borderTopLeftRadius: BorderRadius.lg,
     borderBottomLeftRadius: BorderRadius.lg},
   carListInfo: {

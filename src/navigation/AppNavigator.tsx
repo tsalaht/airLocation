@@ -19,16 +19,44 @@ import BookingConfirmationScreen from '../screens/BookingConfirmationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import AboutScreen from '../screens/AboutScreen';
+import PersonalInfoScreen from '../screens/PersonalInfoScreen';
+import MyBookingsScreen from '../screens/MyBookingsScreen';
+import ContactScreen from '../screens/ContactScreen';
+import PrivacyScreen from '../screens/PrivacyScreen';
+import TermsScreen from '../screens/TermsScreen';
 
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
+type RootStackParamList = {
+  Onboarding: undefined;
+  Auth: undefined;
+  MainTabs: undefined;
+  CarDetails: undefined;
+  Booking: undefined;
+  BookingConfirmation: undefined;
+  About: undefined;
+  PersonalInfo: undefined;
+  MyBookings: undefined;
+  Contact: undefined;
+  Privacy: undefined;
+  Terms: undefined;
+  Notifications: undefined;
+};
+
+type TabsParamList = {
+  Home: undefined;
+  Search: undefined;
+  Bookings: undefined;
+  Profile: undefined;
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabsParamList>();
 
 const MainTabs = () => {
   const { isRTL } = useLanguage();
   const { theme } = useTheme();
 
   return (
-    <Tab.Navigator
+    <Tab.Navigator id={undefined}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -73,7 +101,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -86,6 +114,12 @@ const AppNavigator = () => {
             <Stack.Screen name="Booking" component={BookingScreen} />
             <Stack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
             <Stack.Screen name="About" component={AboutScreen} />
+            <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+            <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
+            <Stack.Screen name="Contact" component={ContactScreen} />
+            <Stack.Screen name="Privacy" component={PrivacyScreen} />
+            <Stack.Screen name="Terms" component={TermsScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
           </>
         )}
       </Stack.Navigator>

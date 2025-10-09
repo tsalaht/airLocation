@@ -207,13 +207,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg},
   languageButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around'},
+ 
+    gap: 12,width: '100%',alignItems: 'center',justifyContent: 'center'},
   languageButton: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 12,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
-    minWidth: 80},
+   width: 100},
   languageFlag: {
     fontSize: 24,
     marginBottom: Spacing.xs},

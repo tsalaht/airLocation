@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "AirLocation",
-    "slug": "AirLocation",
+    "slug": "airlocation",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -21,10 +21,17 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.salaheddinetabet00.airlocation"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2ff57bb3-0438-4c67-97f7-ab976956cd5a"
+      }
+    },
+    "owner": "salaheddinetabet00"
   }
 }
